@@ -1,3 +1,10 @@
+/*
+ * @Author: zaqvil
+ * @Date: 2021-01-14 16:08:28
+ * @FilePath: \projects\prerenderer\es6\server.js
+ * @LastEditTime: 2021-01-19 14:12:31
+ * @LastEditors: zaqvil
+ */
 const express = require('express')
 const proxy = require('http-proxy-middleware')
 const path = require('path')
@@ -19,6 +26,7 @@ class Server {
 
     this._prerenderer.modifyServer(this, 'pre-static')
 
+    // 允许访问静态资源
     server.get('*', express.static(this._options.staticDir, {
       dotfiles: 'allow'
     }))
@@ -27,6 +35,7 @@ class Server {
 
     this._prerenderer.modifyServer(this, 'pre-fallback')
 
+    // 设置代理
     if (this._options.server && this._options.server.proxy) {
       for (let proxyPath of Object.keys(this._options.server.proxy)) {
         server.use(proxyPath, proxy(this._options.server.proxy[proxyPath]))

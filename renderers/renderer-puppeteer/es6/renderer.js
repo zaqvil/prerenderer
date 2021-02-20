@@ -76,18 +76,22 @@ class PuppeteerRenderer {
     const rootOptions = Prerenderer.getOptions()
     const options = this._rendererOptions
 
+    // 同时渲染最大数量
     const limiter = promiseLimit(this._rendererOptions.maxConcurrentRoutes)
 
     const pagePromises = Promise.all(
       routes.map(
         (route, index) => limiter(
           async () => {
+            //打开一个新页面
             const page = await this._puppeteer.newPage()
 
+            // 可选：打印页面log
             if (options.consoleHandler) {
               page.on('console', message => options.consoleHandler(route, message))
             }
 
+            // 注入全局对象
             if (options.inject) {
               await page.evaluateOnNewDocument(`(function () { window['${options.injectProperty}'] = ${JSON.stringify(options.inject)}; })();`)
             }
@@ -97,6 +101,7 @@ class PuppeteerRenderer {
             // Allow setting viewport widths and such.
             if (options.viewport) await page.setViewport(options.viewport)
 
+            // 请求拦截
             await this.handleRequestInterception(page, baseURL)
 
             // Hack just in-case the document event fires before our main listener is added.
@@ -112,11 +117,14 @@ class PuppeteerRenderer {
             const navigationOptions = (options.navigationOptions) ? { waituntil: 'networkidle0', ...options.navigationOptions } : { waituntil: 'networkidle0' };
             await page.goto(`${baseURL}${route}`, navigationOptions);
 
+            //查找指定元素后退出
             // Wait for some specific element exists
             const { renderAfterElementExists } = this._rendererOptions
             if (renderAfterElementExists && typeof renderAfterElementExists === 'string') {
               await page.waitForSelector(renderAfterElementExists)
             }
+
+            
             // Once this completes, it's safe to capture the page contents.
             await page.evaluate(waitForRender, this._rendererOptions)
 

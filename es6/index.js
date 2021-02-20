@@ -76,6 +76,7 @@ If you are not sure wihch renderer to use, see the documentation at https://gith
 
   async initialize () {
     // Initialization is separate from construction because science? (Ideally to initialize the server and renderer separately.)
+    // 设置端口号                手动设置端口号                自动检查可用端口
     this._options.server.port = this._options.server.port || await PortFinder.getPortPromise() || 13010
     await this._server.initialize()
     await this._renderer.initialize()
